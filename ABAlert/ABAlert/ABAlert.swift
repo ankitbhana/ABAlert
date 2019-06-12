@@ -44,6 +44,7 @@ class ABAlert: UIView {
      Use this instance method to add ABAlertButton objects to ABAlert.
      */
     func addButtons(alertButtons: [ABAlertButton]) {
+//        guard !ABAlert.appearanceManager.alertEnableToastMode else { return }
         self.abAlertButtons = alertButtons
         guard let alert = ABAlert.abAlert else { return }
         alertButtons.forEach { alert.stackButtons.addArrangedSubview($0) }
@@ -60,6 +61,24 @@ class ABAlert: UIView {
         setAppearance()
         animateFor(animationDirection: .in)
     }
+    
+//    func show() {
+//        guard let alert = ABAlert.abAlert else { return }
+//        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+//        //        alertDialog.center = center
+//        //        alert.frame.size = CGSize(width: 240, height: 59.5)//UIScreen.main.bounds
+//        keyWindow.addSubview(alert.alertDialog)
+//        keyWindow.layoutIfNeeded()
+//        alertDialog.bounds.size = CGSize(width: UIScreen.main.bounds.width * 0.75 , height: alertDialog.bounds.height)//center
+//        let toastCenterX = keyWindow.center.x - alertDialog.bounds.width / 2
+//        let tostCenterY = keyWindow.frame.maxY - 200
+//        alertDialog.frame.origin = CGPoint(x: toastCenterX, y: tostCenterY)
+//        print(alertDialog.frame)
+//
+//        setAppearance()
+//        animateFor(animationDirection: .in)
+//    }
+
 
     /**
      Use this instance method to remove ABAlert from keyWindow.
@@ -82,9 +101,11 @@ class ABAlert: UIView {
             abAlert = nil
         }
         abAlert = UINib(nibName: "ABAlert", bundle: nil).instantiate(withOwner: abAlert, options: nil).first as? ABAlert
+//        abAlert!.frame = appearanceManager.alertEnableToastMode ? abAlert!.alertDialog.bounds : UIScreen.main.bounds
         abAlert!.removeUnusedOutletsAndAddConstrains(title: title, message: message, image: image)
         abAlert!.feedAlertProperties(title: title, message: message, image: image)
         abAlert!.setupStackButton()
+        abAlert!.setupTapToDissmiss()
         appearanceManager.convenienceAlertTransition = convenienceAlertTransition
         appearanceManager.abAlert = abAlert
     }
@@ -119,11 +140,13 @@ class ABAlert: UIView {
      */
     private func removeUnusedOutletsAndAddConstrains(title: String?, message: String, image: UIImage?) {
         
-        if title == nil && image == nil {
+        if title == nil && image == nil /*|| ABAlert.appearanceManager.alertEnableToastMode*/ {
             lblTitle.removeFromSuperview()
             imageView.removeFromSuperview()
             lblMessage.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint(item: lblMessage, attribute: .top, relatedBy: .equal, toItem: alertDialog, attribute: .top, multiplier: 1, constant: 20).isActive = true
+//            guard ABAlert.appearanceManager.alertEnableToastMode else { return }
+//            alertBGView.removeFromSuperview()
             return
         }
         
@@ -162,6 +185,23 @@ class ABAlert: UIView {
     private func setupStackButton() {
         stackButtons.axis = .horizontal
         stackButtons.distribution = .fillEqually
+    }
+    
+    /**
+     If tapToDissmiss is set to true, add the tap on background view and assigned a selector to it.
+     */
+    private func setupTapToDissmiss() {
+        guard ABAlert.appearanceManager.alertTapToDismiss else { return }
+        alertBGView.isUserInteractionEnabled = true
+        alertBGView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(bgViewTapped)))
+    }
+    
+    /**
+     Method is called when background view is tapped.
+     */
+    @objc private func bgViewTapped() {
+        //guard !ABAlert.appearanceManager.alertEnableToastMode else { return }
+        ABAlert.remove()
     }
     
 }
@@ -297,14 +337,24 @@ class ABAlertAppearanceManager {
     }
     
     /**
-     Use this property to set the 'Alert Transition Animation Style'. Default value is fadeIn.
+     Use this property to set the 'Alert Transition Animation Style'. Default value is bounceUP.
      */
-    var alertTransition: ABAlertTransitionManager.TransitionStyle = .fadeIn {
+    var alertTransition: ABAlertTransitionManager.TransitionStyle = .bounceUP {
         didSet {
             guard let alert = abAlert else { return }
             abAlertTransitionManager = ABAlertTransitionManager(alert: alert, alertTransition: alertTransition, alertDialog: alert.alertDialog, alertBGView: alert.alertBGView)
         }
     }
+    
+    /**
+     Use this property to dismiss the alert when background view is tapped. Default value is false.
+     */
+    var alertTapToDismiss: Bool = false
+    
+    /**
+     When this property is set to true the alert will present itself as a toast from bottom only with provided message. Default value is false.
+     */
+    //var alertEnableToastMode = false
     
     
     //MARK: - Private Helper Methods

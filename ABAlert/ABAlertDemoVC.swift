@@ -18,7 +18,6 @@ class ABAlertDemoVC: UIViewController {
     @IBOutlet weak var tfButtonsHeight: UITextField!
     
     var selectedBtn = UIButton()
-    
     var titleColor = ColorConfig(red: 0, green: 0, blue: 0) {
         didSet {
             let ttlColor = UIColor(red: titleColor.red/255, green: titleColor.green/255, blue: titleColor.blue/255, alpha: 1)
@@ -151,9 +150,9 @@ class ABAlertDemoVC: UIViewController {
         
         switch sender.selectedSegmentIndex {
         case 0:
-            abAlertAppearanceManager.alertTransition = .fadeIn
-        case 1:
             abAlertAppearanceManager.alertTransition = .bounceUP
+        case 1:
+            abAlertAppearanceManager.alertTransition = .fadeIn
         case 2:
             abAlertAppearanceManager.alertTransition = .zoomIn
         case 3:
@@ -203,6 +202,11 @@ extension ABAlertDemoVC {
         guard let abAlertButtons = getButtons() else { return }
         abAlert.addButtons(alertButtons: abAlertButtons)
         abAlert.show()
+    }
+    
+    @IBAction func switchTapToDissmiss(_ sender: UISwitch) {
+        sender.isOn = !sender.isOn
+        abAlertAppearanceManager.alertTapToDismiss = sender.isOn
     }
     
     private func getButtons() -> [ABAlertButton]? {

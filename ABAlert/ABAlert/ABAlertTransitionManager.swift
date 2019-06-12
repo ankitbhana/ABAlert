@@ -24,7 +24,7 @@ class ABAlertTransitionManager {
         case `in`, out
     }
 
-    
+    private weak var abAlertAppearanceManager = ABAlert.appearanceManager
     fileprivate var abAlert: ABAlert
     fileprivate var alertDialog: UIView
     fileprivate var alertBGView: UIView
@@ -46,6 +46,11 @@ class ABAlertTransitionManager {
      Animate the ABAlert with the given transion style.
      */
     func animateFor(animationDirection: AnimationDirection) {
+        /*if let alertEnableToastMode = abAlertAppearanceManager?.alertEnableToastMode, alertEnableToastMode {
+            showAlertAsToast()
+            return
+        }*/
+        
         let alertTransition = convenienceAlertTransition != nil ? convenienceAlertTransition! : self.alertTransition
         switch alertTransition {
         case .fadeIn:
@@ -69,13 +74,13 @@ class ABAlertTransitionManager {
             
         case .in:
             abAlert.alpha = 0
-            UIView.animate(withDuration: 0.4) {
-                self.abAlert.layer.opacity = 1
+            UIView.animate(withDuration: 0.3) {
+                self.abAlert.alpha = 1
             }
             
         case .out:
             UIView.animate(withDuration: 0.2, animations: {
-                self.abAlert.layer.opacity = 0
+                self.abAlert.alpha = 0
             }) { (_) in
                 self.abAlert.removeFromSuperview()
             }
@@ -194,4 +199,40 @@ class ABAlertTransitionManager {
         }
     }
     
+    /**
+     Present ABAlert as a toast.
+     */
+    /*private func showAlertAsToast() {
+        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+        
+        let frameY = alertDialog.frame.origin.y
+        let maxY = keyWindow.frame.maxY
+        
+        let initialX: CGFloat = 0
+        let initialY: CGFloat = maxY - frameY
+        
+        let translateTransform = CGAffineTransform(translationX: initialX, y: initialY)
+        alertDialog.transform = translateTransform
+        
+        let bottomSafeArea = keyWindow.safeAreaInsets.bottom
+        let totalHeightWithoutSafeArea = keyWindow.bounds.height - bottomSafeArea
+        
+        let finalX: CGFloat = 0
+        let finalY: CGFloat = totalHeightWithoutSafeArea - frameY - 100
+        let finalTranslateTransform = CGAffineTransform(translationX: finalX, y: finalY)
+        
+        self.alertBGView.alpha = 0
+        
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseIn, animations: {
+            self.alertDialog.transform = finalTranslateTransform
+        }, completion: {(_) in
+            
+            UIView.animate(withDuration: 0.5, delay: 3.0, options: .curveEaseIn, animations: {
+                self.alertDialog.alpha = 0
+            }, completion: { (_) in
+                self.abAlert.removeFromSuperview()
+            })
+        })
+
+    }*/
 }
